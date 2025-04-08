@@ -2,7 +2,51 @@ const Exam = require('../models/exam.model');
 const Question = require('../models/question.model');
 const User = require('../models/user.model');
 
-// Create a === req.user._id.toString()
+// Get all exams
+exports.getExams = async (req, res) => {
+  try {
+    let query = {};
+
+    // Students can only see published exams they are registered for
+    if (req.user.role === 'student') {
+      query = {
+        isPublished: true,
+        'allowedStudents.student': req.user._id
+      };
+    }
+    // Faculty/admin can see all their created exams
+    else if (['faculty', 'admin'].includes(req.user.role)) {
+      query.createdBy = req.user._id;
+    }
+
+    const exams = await Exam.find(query)
+      .populate('createdBy', 'name email')
+      .populate('allowedStudents.student', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json(exams);
+  } catch (error) {
+    console.error('Error fetching exams:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get exam by ID
+exports.getExamById = async (req, res) => {
+  try {
+    const exam = await Exam.findById(req.params.id)
+      .populate('createdBy', 'name email')
+      .populate('allowedStudents.student', 'name email')
+      .populate('questions');
+
+    if (!exam) {
+      return res.status(404).json({ message: 'Exam not found' });
+    }
+
+    // Students can only view published exams they are registered for
+    if (req.user.role === 'student') {
+      const isAllowed = exam.allowedStudents.some(
+        entry => entry.student && entry.student._id.toString() === req.user._id.toString()
       );
       
       if (!isAllowed) {
@@ -18,23 +62,52 @@ const User = require('../models/user.model');
     res.json(exam);
   } catch (error) {
     console.error('Error fetching exam:', error);
-    res.status(500).json({ message: error.messonly age });
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Create an exam
+exports.createExam = async (req, res) => {
+  try {
+    // Only faculty and admin can create exams
+    if (req.user.role !== 'faculty' && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const exam = new Exam({
+      ...req.body,
+      createdBy: req.user._id
+    });
+
+    await exam.save();
+    
+    // Populate necessary fields for response
+    await exam.populate('createdBy', 'name email');
+    
+    res.status(201).json(exam);
+  } catch (error) {
+    console.error('Error creating exam:', error);
+    res.status(400).json({ message: error.message });
   }
 };
 
 // Update an exam
-expo = async (req, res) => {
+exports.updateExam = async (req, res) => {
   try {
-    const exam = await Exam.find
+    const exam = await Exam.findById(req.params.id);
 
-    if (!exam)
-        {
-      return res.status(404).json({ sage: 'Eor can update the exam
+    if (!exam) {
+      return res.status(404).json({ message: 'Exam not found' });
+    }
+
+    // Only creator can update the exam
     if (exam.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    // Cannot update 
+    // Cannot update published exams
+    if (exam.isPublished) {
+      return res.status(400).json({ message: 'Cannot update published exam' });
     }
 
     // Update exam fields
@@ -63,18 +136,20 @@ exports.deleteExam = async (req, res) => {
 
     // Only creator can delete the exam
     if (exam.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'only Accespublishesnied.e creator or admin can delete this exam.' });
+      return res.status(403).json({ message: 'Only creator or admin can delete this exam' });
     }
 
     // Cannot delete published or ongoing exams
-    if (exam.isPublished || exam.status === 'ongoing' || exam.status === 'completed')r: 
+    if (exam.isPublished || exam.status === 'ongoing' || exam.status === 'completed') {
+      return res.status(400).json({ message: 'Cannot delete published or ongoing exams' });
+    }
 
-    await Exam.findByIdAndDelete(req.pars.id);
+    await Exam.findByIdAndDelete(req.params.id);
     console.log('Exam deleted successfully:', req.params.id);
-    res.jn({ messag 'Exam deted successfully' });
-  catch (error) {
+    res.json({ message: 'Exam deleted successfully' });
+  } catch (error) {
     console.error('Error deleting exam:', error);
-    res.status(500).age: 'Error deleting exam. Please try again.' });
+    res.status(500).json({ message: 'Error deleting exam. Please try again.' });
   }
 };
 
@@ -438,4 +513,4 @@ exports.submitExam = async (req, res) => {
     console.error('Error submitting exam:', error);
     res.status(500).json({ message: error.message });
   }
-}; 
+};
