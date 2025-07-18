@@ -22,14 +22,15 @@ A secure, scalable, and modern Online Exam Portal built with the MERN stack. Thi
 - **Authentication:** JWT, Bcrypt, Email-based OTP
 - **Other Tools:** Nodemailer, Multer, dotenv
 
-## 📸 Screenshots
+## 😶‍🌫️ Screenshots
 
-> Replace these placeholder links with your actual images
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img width="48%"   alt="image" src="https://github.com/user-attachments/assets/d20385e8-98e9-40b0-a3ba-f5ba108a405e" />
+  <img width="48%" alt="image" src="https://github.com/user-attachments/assets/bba97cca-8584-4e8a-aa98-f7821d2eec11" />
+  <img width="48%" alt="image" src="https://github.com/user-attachments/assets/ff36dfd8-3d23-40d0-89b1-df3217542ce3" />
+  <img width="48%" alt="image" src="https://github.com/user-attachments/assets/another-image-id" />
+</div>
 
-![Login Page](./screenshots/login.png)
-![Student Dashboard](./screenshots/student-dashboard.png)
-![Exam Interface](./screenshots/exam-interface.png)
-![Admin Panel](./screenshots/admin-panel.png)
 
 ## ⚙️ Installation
 
