@@ -22,11 +22,6 @@ A secure, scalable, and modern Online Exam Portal built with the MERN stack. Thi
 - **Authentication:** JWT, Bcrypt, Email-based OTP
 - **Other Tools:** Nodemailer, Multer, dotenv
 
-## 😶‍🌫️ Screenshots
-
-
-
-
 ## ⚙️ Installation
 
 ```bash
